@@ -11,12 +11,15 @@
 
 #include <iostream>
 #include "../../3rdparty/glog/moudle_glog.h"
+#include <mutex>
+
 template <typename T>
 class cdrawQueue {
 private:
     T *data;
     int head, tail, capacity, count;
     uint8_t id;
+    std::mutex mtx;
 public:
     cdrawQueue(int size, int id) : capacity(size), head(0), tail(0), count(0), id(id){
         LOG(INFO) << "cdrawQueue init, id :" << id;
@@ -47,7 +50,8 @@ public:
     * @author: codeDrawing
     * @description: 入队
     */
-    uint8_t enqueue(T item) {
+    uint8_t enqueue(const T item) {
+        std::lock_guard<std::mutex> lock(mtx);
         if (isFull()) {
             LOG(WARNING) << "the queue is full, id :" << id;
             return 0;
@@ -63,16 +67,46 @@ public:
     */
 
     T dequeue(){
+        std::lock_guard<std::mutex> lock(mtx);
         if(isEmpty() == true){
             LOG(WARNING) << "the queue is empty, id :" << id;
-            //return 0;
+            return 0;
         }
         T item = data[head];
         head = (head + 1) % capacity;
         count--;
         return item;
     }
+    /**
+     * @author: codeDrawing
+     * @description: 使所有元素出队
+    */
+    std::vector<T> dequeueAll(){
+        std::lock_guard<std::mutex> lock(mtx);
+        std::vector<T> allItem;
+        if(isEmpty() == true){
+            LOG(WARNING) << "the queue is empty, id :" << id;
+            return allItem;
+        }
+        while(isEmpty() == false){
+            T item = data[head];
+            head = (head + 1) % capacity;
+            count--;
+            allItem.push_back(item);
+        }
+        return allItem;
+    }
 
+    /**
+     * @author: codeDrawing
+     * @description: 清空队列
+    */
+    void clear(){
+        std::lock_guard<std::mutex> lock(mtx);
+        head = 0;
+        tail = 0;
+        count = 0;
+    }
 };
 
 

@@ -17,4 +17,6 @@ add_executable(cdraw main.cpp
         cdrawStruct/queue/cdrawQueue.cpp
         cdrawStruct/queue/cdrawQueue.h
         3rdparty/glog/moudle_glog.h
+        cdrawTools/runTime/cdrawTime.cpp
+        cdrawTools/runTime/cdrawTime.h
 )

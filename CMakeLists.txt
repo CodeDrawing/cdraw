@@ -12,7 +12,10 @@ include_directories(
 link_directories(
         ${glog_path}/lib
 )
-set(glog)
+
+set(lib
+    glog)
+
 add_executable(cdraw main.cpp
         cdrawStruct/queue/cdrawQueue.cpp
         cdrawStruct/queue/cdrawQueue.h
@@ -20,3 +23,4 @@ add_executable(cdraw main.cpp
         cdrawTools/runTime/cdrawTime.cpp
         cdrawTools/runTime/cdrawTime.h
 )
+target_link_libraries(cdraw ${lib})

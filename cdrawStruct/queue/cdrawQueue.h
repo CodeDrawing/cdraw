@@ -12,7 +12,7 @@
 #include <iostream>
 #include "../../3rdparty/glog/moudle_glog.h"
 #include <mutex>
-
+#define __MODULE_NAME__  "cdrawQueue"
 template <typename T>
 class cdrawQueue {
 private:
@@ -22,11 +22,11 @@ private:
     std::mutex mtx;
 public:
     cdrawQueue(int size, int id) : capacity(size), head(0), tail(0), count(0), id(id){
-        LOG(INFO) << "cdrawQueue init, id :" << id;
-        data = new int[size];
+        LOG_WITH_MODULE(INFO) << "cdrawQueue init, id :" << id;
+        data = new T[size];
     }
     ~cdrawQueue(){
-        LOG(INFO) << "cdrawQueue destroy, id :" << id;
+        LOG_WITH_MODULE(INFO) << "cdrawQueue destroy, id :" << id;
         delete[] data;
     }
 
@@ -53,7 +53,7 @@ public:
     uint8_t enqueue(const T item) {
         std::lock_guard<std::mutex> lock(mtx);
         if (isFull()) {
-            LOG(WARNING) << "the queue is full, id :" << id;
+            LOG_WITH_MODULE(WARNING) << "the queue is full, id :" << id;
             return 0;
         }
         data[tail] = item;
@@ -69,7 +69,7 @@ public:
     T dequeue(){
         std::lock_guard<std::mutex> lock(mtx);
         if(isEmpty() == true){
-            LOG(WARNING) << "the queue is empty, id :" << id;
+            LOG_WITH_MODULE(WARNING) << "the queue is empty, id :" << id;
             return 0;
         }
         T item = data[head];

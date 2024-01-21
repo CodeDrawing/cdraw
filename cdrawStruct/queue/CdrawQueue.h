@@ -1,8 +1,3 @@
-/**
- * codeDrawing
- * 2024/1/15 17:47
- *
- */
 
 
 #ifndef CDRAW_CDRAWQUEUE_H
@@ -10,24 +5,24 @@
 
 
 #include <iostream>
-#include "../../3rdparty/glog/moudle_glog.h"
+#include "moudle_glog.h"
 #include <mutex>
 #define __MODULE_NAME__  "cdrawQueue"
 template <typename T>
-class cdrawQueue {
+class CdrawQueue {
 private:
-    T *data;
-    int head, tail, capacity, count;
-    uint8_t id;
-    std::mutex mtx;
+    T *data_;
+    int head_, tail_, capacity_, count_;
+    uint8_t id_;
+    std::mutex mtx_;
 public:
-    cdrawQueue(int size, int id) : capacity(size), head(0), tail(0), count(0), id(id){
+    CdrawQueue(int size, int id) : capacity_(size), head_(0), tail_(0), count_(0), id_(id){
         LOG_WITH_MODULE(INFO) << "cdrawQueue init, id :" << id;
-        data = new T[size];
+        data_ = new T[size];
     }
-    ~cdrawQueue(){
+    ~CdrawQueue(){
         LOG_WITH_MODULE(INFO) << "cdrawQueue destroy, id :" << id;
-        delete[] data;
+        delete[] data_;
     }
 
     /**
@@ -35,7 +30,7 @@ public:
     * @description: 判断该队列是否为空
     */
     bool isEmpty() {
-        return count == 0;
+        return count_ == 0;
     }
 
     /**
@@ -43,7 +38,7 @@ public:
     * @description: 判断该队列是否已满
     */
     bool isFull(){
-        return count == capacity;
+        return count_ == capacity_;
     }
 
     /**
@@ -67,14 +62,14 @@ public:
     */
 
     T dequeue(){
-        std::lock_guard<std::mutex> lock(mtx);
+        std::lock_guard<std::mutex> lock(mtx_);
         if(isEmpty() == true){
-            LOG_WITH_MODULE(WARNING) << "the queue is empty, id :" << id;
+            LOG_WITH_MODULE(WARNING) << "the queue is empty, id :" << id_;
             return 0;
         }
-        T item = data[head];
-        head = (head + 1) % capacity;
-        count--;
+        T item = data_[head_];
+        head_ = (head_ + 1) % capacity_;
+        count_--;
         return item;
     }
     /**
@@ -102,10 +97,10 @@ public:
      * @description: 清空队列
     */
     void clear(){
-        std::lock_guard<std::mutex> lock(mtx);
-        head = 0;
-        tail = 0;
-        count = 0;
+        std::lock_guard<std::mutex> lock(mtx_);
+        head_ = 0;
+        tail_ = 0;
+        count_ = 0;
     }
 };
 

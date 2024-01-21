@@ -1,7 +1,9 @@
+
+#include "cdrawStruct/queue/CdrawQueue.h"
+#include "cdrawTools/runTime/CdrawTime.h"
+
 #include <iostream>
 
-#include "cdrawStruct/queue/cdrawQueue.h"
-#include "cdrawTools/runTime/cdrawTime.h"
 #define __MODULE_NAME__ "cdraw"
 int log_init(char *argv)
 {
@@ -25,12 +27,12 @@ struct my{
     int id;
     char data[1500];
 };
-#if 0
-int main(int argc, char **argv) {
+int
+main(int argc, char **argv) {
     log_init(argv[0]);
 
-    cdrawTime time;
-    cdrawQueue<my> queue(10, 1);
+    CdrawTime time;
+    CdrawQueue<my> queue(10, 1);
     struct my a;
     a.id = 1;
     strcpy(a.data, "aa");
@@ -59,17 +61,5 @@ int main(int argc, char **argv) {
     std::cout<< time.getTimeDiff() << std::endl;
     return 0;
 }
-#endif
-int
-main(void){
-    float test[5] = {1.1, 2.2, 3.3, 4.4, 5.5};
-    float dist[5] = {0};
-    for (int i = 0; i < 5; ++i) {
-        std::cout << "test[i]:" << test[i] << std::endl;
-    }
-    memcpy(dist, test, sizeof(test));
-    for (int i = 0; i < 5; ++i) {
-        std::cout << "dist[i]:" << dist[i] << std::endl;
-    }
 
-}
+

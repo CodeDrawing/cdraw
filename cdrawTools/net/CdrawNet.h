@@ -35,12 +35,14 @@ class CdrawNet {
     /**
      * @author: codeDrawing
      * @description: this class has two ways to init, one is localIp and remoteIp, another is localIp
-     *               if only has localIp, than indicate the class is used to receive data, anther is used to send data and receive date
+     *               if only has localIp, than indicate the class is used to receive data, another is used to send data and receive date
     */
     CdrawNet(const uint8_t id, const std::string localIp, const std::string remoteIp, const uint32_t localPort,
              const uint32_t remotePort, const bool isWork = false);
     CdrawNet(const uint8_t id, const std::string localIp, const uint32_t localPort, const bool isWork = false);
+
     ~CdrawNet();
+
     /**
      * @author: codeDrawing
      * @description: send data by udp , once
@@ -51,7 +53,7 @@ class CdrawNet {
      * @author: codeDrawing
      * @description: receive data by udp , once
     */
-    REV_SIZE revDataByUdp(uint8_t *send_data, const uint8_t send_size);
+    REV_SIZE revDataByUdp(uint8_t *rev_data, const uint8_t rcv_size);
 
     /**
      * @author: codeDrawing
@@ -60,8 +62,10 @@ class CdrawNet {
      *               if package_size is not zero, this function will wait and until the getQueueSize() >= package_size
      *               control the function work or not through isWork in class, isWork default value is false,
      *               you can through setIsWork() to change it
+     * @Warning: this function will not create a new thread,
+     *           e.g. std::thread sendThread(&CdrawNet::sendDatesByUdpFromQueue<int>, queue, 10, true);
     */
-    template<class T>
+    template<typename T>
         void sendDatesByUdpFromQueue(CdrawQueue<T> send_data_queue, const uint8_t package_size = 0, const bool isWork = true);
 
     /**
@@ -70,7 +74,7 @@ class CdrawNet {
      *               control the function work or not through isWork in class, isWork default is false
      *               receive size default value is 1500
     */
-    template<class T>
+    template<typename T>
         void revDatesByUdpToQueue(CdrawQueue<T> rev_data_queue, const uint8_t rev_size = 1500, const bool isWork = true);
 };
 

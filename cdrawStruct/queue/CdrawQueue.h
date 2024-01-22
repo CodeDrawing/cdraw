@@ -7,8 +7,10 @@
 #include <iostream>
 #include "moudle_glog.h"
 #include <mutex>
+
 #define __MODULE_NAME__  "cdrawQueue"
-template <typename T>
+
+template<typename T>
 class CdrawQueue {
 private:
     T *data_;
@@ -16,11 +18,12 @@ private:
     uint8_t id_;
     std::mutex mtx_;
 public:
-    CdrawQueue(int size, int id) : capacity_(size), head_(0), tail_(0), count_(0), id_(id){
+    CdrawQueue(int size, int id) : capacity_(size), head_(0), tail_(0), count_(0), id_(id) {
         LOG_WITH_MODULE(INFO) << "cdrawQueue init, id :" << id;
         data_ = new T[size];
     }
-    ~CdrawQueue(){
+
+    ~CdrawQueue() {
         LOG_WITH_MODULE(INFO) << "cdrawQueue destroy, id :" << id;
         delete[] data_;
     }
@@ -37,7 +40,7 @@ public:
     * @author: codeDrawing
     * @description: 判断该队列是否已满
     */
-    bool isFull(){
+    bool isFull() {
         return count_ == capacity_;
     }
 
@@ -46,7 +49,7 @@ public:
     * @description: 入队
     */
     uint8_t enqueue(const T item) {
-        std::lock_guard<std::mutex> lock(mtx);
+        std::lock_guard <std::mutex> lock(mtx);
         if (isFull()) {
             LOG_WITH_MODULE(WARNING) << "the queue is full, id :" << id;
             return 0;
@@ -56,14 +59,14 @@ public:
         count++;
         return 1;
     }
+
     /**
     * @author: codeDrawing
-    * @description: 出队
+    * @description: 出队, 非阻塞式
     */
-
-    T dequeue(){
-        std::lock_guard<std::mutex> lock(mtx_);
-        if(isEmpty() == true){
+    T dequeueNotBlock() {
+        std::lock_guard <std::mutex> lock(mtx_);
+        if (isEmpty() == true) {
             LOG_WITH_MODULE(WARNING) << "the queue is empty, id :" << id_;
             return 0;
         }
@@ -72,18 +75,59 @@ public:
         count_--;
         return item;
     }
+
     /**
      * @author: codeDrawing
-     * @description: 使所有元素出队
+     * @description: 出队, 阻塞式
     */
-    std::vector<T> dequeueAll(){
-        std::lock_guard<std::mutex> lock(mtx);
-        std::vector<T> allItem;
-        if(isEmpty() == true){
+    T dequeueBlock() {
+        std::lock_guard <std::mutex> lock(mtx_);
+        while (isEmpty() == true) {
+            //LOG_WITH_MODULE(WARNING) << "the queue is empty, id :" << id_;
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        }
+        T item = data_[head_];
+        head_ = (head_ + 1) % capacity_;
+        count_--;
+        return item;
+    }
+
+    /**
+     * @author: codeDrawing
+     * @description: 使所有元素出队，非阻塞式
+    */
+    std::vector <T> dequeueAllNotBlock() {
+        std::lock_guard <std::mutex> lock(mtx);
+        std::vector <T> allItem;
+        if (isEmpty() == true) {
             LOG(WARNING) << "the queue is empty, id :" << id;
             return allItem;
         }
-        while(isEmpty() == false){
+        while (isEmpty() == false) {
+            T item = data[head];
+            head = (head + 1) % capacity;
+            count--;
+            allItem.push_back(item);
+        }
+        return allItem;
+    }
+
+    /**
+     * @author: codeDrawing
+     * @description: 使所有元素出队，阻塞式
+    */
+    std::vector <T> dequeueAllBlock() {
+        std::lock_guard <std::mutex> lock(mtx);
+        while (isEmpty() == true) {
+            //LOG_WITH_MODULE(WARNING) << "the queue is empty, id :" << id_;
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        }
+        std::vector <T> allItem;
+        if (isEmpty() == true) {
+            LOG(WARNING) << "the queue is empty, id :" << id;
+            return allItem;
+        }
+        while (isEmpty() == false) {
             T item = data[head];
             head = (head + 1) % capacity;
             count--;
@@ -96,8 +140,8 @@ public:
      * @author: codeDrawing
      * @description: 清空队列
     */
-    void clear(){
-        std::lock_guard<std::mutex> lock(mtx_);
+    void clear() {
+        std::lock_guard <std::mutex> lock(mtx_);
         head_ = 0;
         tail_ = 0;
         count_ = 0;

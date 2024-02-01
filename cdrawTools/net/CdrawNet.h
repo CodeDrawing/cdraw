@@ -9,14 +9,16 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <unistd.h>
 
 #include <cstring>
 #include <iostream>
 
 #include "CdrawQueue.h"
+#include "module_glog.h"
 
-typedef uint8_t SEND_SIZE;
-typedef uint8_t REV_SIZE;
+typedef int8_t SEND_SIZE;
+typedef int8_t REV_SIZE;
 
 class CdrawNet {
  private:
@@ -47,13 +49,13 @@ class CdrawNet {
      * @author: codeDrawing
      * @description: send data by udp , once
     */
-    SEND_SIZE sendDateByUdp(const uint8_t *send_data, const uint8_t send_size);
+    SEND_SIZE sendDateByUdp(const uint8_t *send_data, const uint32_t send_size);
 
     /**
      * @author: codeDrawing
      * @description: receive data by udp , once
     */
-    REV_SIZE revDataByUdp(uint8_t *rev_data, const uint8_t rcv_size);
+    REV_SIZE revDataByUdp(uint8_t *rev_data, const uint32_t rcv_size);
 
     /**
      * @author: codeDrawing
@@ -66,7 +68,7 @@ class CdrawNet {
      *           e.g. std::thread sendThread(&CdrawNet::sendDatesByUdpFromQueue<int>, queue, 10, true);
     */
     template<typename T>
-        void sendDatesByUdpFromQueue(CdrawQueue<T> send_data_queue, const uint8_t package_size = 0, const bool isWork = true);
+        void sendDatesByUdpFromQueue(CdrawQueue<T> send_data_queue, const uint32_t package_size = 0, const bool isWork = true);
 
     /**
      * @author: codeDrawing
@@ -75,7 +77,19 @@ class CdrawNet {
      *               receive size default value is 1500
     */
     template<typename T>
-        void revDatesByUdpToQueue(CdrawQueue<T> rev_data_queue, const uint8_t rev_size = 1500, const bool isWork = true);
+        void revDatesByUdpToQueue(CdrawQueue<T> rev_data_queue, const uint32_t rev_size = 1500, const bool isWork = true);
+
+    /**
+     * @author: codeDrawing
+     * @description: set isWork_ value, success return 0, failed return -1
+    */
+    void setIsWork(const bool isWork);
+
+    /**
+     * @author: codeDrawing
+     * @description: get isWork_ value;
+    */
+    bool getIsWork();
 };
 
 

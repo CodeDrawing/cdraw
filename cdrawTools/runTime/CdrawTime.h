@@ -5,7 +5,9 @@
 
 #include <iostream>
 #include <chrono>
-#include "moudle_glog.h"
+
+#include "module_glog.h"
+
 #define __MODULE_NAME__ "cdrawTime"
 class CdrawTime {
 private:

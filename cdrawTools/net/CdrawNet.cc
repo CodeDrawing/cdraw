@@ -1,10 +1,13 @@
-
 #include <thread>
 #include "CdrawNet.h"
 
+
+
+#define __MODULE_NAME__ "cdrawNet"
 CdrawNet::CdrawNet  (const uint8_t id, const std::string localIp, const std::string remoteIp, const uint32_t localPort,
-                    const uint32_t remotePort, const bool isWork): id_(id), local_port_(localPort), remote_port_(remotePort),
-                    local_ip_(localIp), remote_ip_(remoteIp), is_work_(isWork){
+                    const uint32_t remotePort, const bool isWork, const bool use_json, const std::string json_path,
+                     const std::string json_name): id_(id), local_port_(localPort), remote_port_(remotePort),
+                    local_ip_(localIp), remote_ip_(remoteIp), is_work_(isWork), use_json_(use_json), json_(json_path, json_name, id){
 
     net_fd_ = socket(AF_INET, SOCK_DGRAM, 0);
     memset(&local_addr_, 0, sizeof(struct sockaddr_in));
@@ -22,11 +25,19 @@ CdrawNet::CdrawNet  (const uint8_t id, const std::string localIp, const std::str
         LOG_WITH_MODULE(ERROR) << "bind local ip failed local ip:" << local_ip_ << "local port :" << local_port_;
         return;
     }
+    //赋值给json结构体
+    net_json_.out_port = remotePort;
+    net_json_.local_port = localPort;
+    strcpy(net_json_.local_ip, local_ip_.c_str());
+    strcpy(net_json_.out_ip, remoteIp.c_str());
+
     LOG_WITH_MODULE(INFO) << "bind local ip success local ip:" << local_ip_ << "local port :" << local_port_;
 }
 
-CdrawNet::CdrawNet  (const uint8_t id, const std::string localIp, const uint32_t localPort, const bool isWork)
-                    :id_(id), local_ip_(localIp), local_port_(localPort), is_work_(isWork) {
+CdrawNet::CdrawNet  (const uint8_t id, const std::string localIp, const uint32_t localPort, const bool isWork
+                    ,const bool use_json, const std::string json_path, const std::string json_name)
+                    :id_(id), local_ip_(localIp), local_port_(localPort), is_work_(isWork) ,
+                     use_json_(use_json), json_(json_path, json_name, id){
 
     net_fd_ = socket(AF_INET, SOCK_DGRAM, 0);
     memset(&local_addr_, 0, sizeof(struct sockaddr_in));
@@ -35,6 +46,11 @@ CdrawNet::CdrawNet  (const uint8_t id, const std::string localIp, const uint32_t
     local_addr_.sin_port = htons(local_port_);
     local_addr_.sin_family = AF_INET;
 
+    //赋值给json结构体
+    net_json_.out_port = 0;
+    net_json_.local_port = localPort;
+    strcpy(net_json_.local_ip, local_ip_.c_str());
+    strcpy(net_json_.out_ip, "");
 
     if(bind(net_fd_, (const struct sockaddr *)&local_addr_, sizeof(local_addr_)) != 0){
         LOG_WITH_MODULE(ERROR) << "bind local ip failed local ip:" << local_ip_ << "local port :" << local_port_;
@@ -44,6 +60,7 @@ CdrawNet::CdrawNet  (const uint8_t id, const std::string localIp, const uint32_t
 }
 
 CdrawNet::~CdrawNet() {
+    LOG_WITH_MODULE(INFO) << "destroy net class";
     close(net_fd_);
 }
 
@@ -105,12 +122,32 @@ CdrawNet::revDatesByUdpToQueue(CdrawQueue<T> rev_data_queue, const uint32_t rev_
     }
 }
 
-inline
-void CdrawNet::setIsWork(const bool isWork){
+inline void
+CdrawNet::setIsWork(const bool isWork){
     is_work_ = isWork;
     LOG_WITH_MODULE(INFO) << "set is work success, current is work :" << is_work_;
 }
 
-inline bool CdrawNet::getIsWork() {
+inline bool
+CdrawNet::get_is_work() {
     return is_work_;
+}
+//template <typename T>
+//uint8_t
+//CdrawNet::init_by_json(void func(cJSON *, int, T*, int, int));
+std::string
+CdrawNet::get_local_ip(){
+    return local_ip_;
+}
+std::string
+CdrawNet::get_remote_ip(){
+    return remote_ip_;
+}
+uint32_t
+CdrawNet::get_local_port(){
+    return local_port_;
+}
+uint32_t
+CdrawNet::get_remote_port(){
+    return remote_port_;
 }

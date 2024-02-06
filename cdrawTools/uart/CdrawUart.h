@@ -20,8 +20,8 @@
 
 #include "module_glog.h"
 
-#define __MODULE_NAME__ "cdrawUart"
-class cDrawUart {
+
+class CdrawUart{
  private:
     /**
      * @author: codeDrawing
@@ -68,14 +68,14 @@ class cDrawUart {
      * @author: codeDrawing
      * @description:    构造函数，传入串口的设备名称
     */
-    cDrawUart(std::string uart_name) : uart_name_(uart_name_) {
+    CdrawUart(std::string uart_name) : uart_name_(uart_name_) {
         std::cout << "uart init, uart_name: " << uart_name_ << std::endl;
     }
     /**
      * @author: codeDrawing
      * @description:    析构函数
     */
-    ~cDrawUart() {
+    ~CdrawUart() {
         if(close(uart_fd_) < 0) {
             LOG_WITH_MODULE(ERROR) << "error " << errno << " closing " << uart_name_ << ": " << strerror(errno) << std::endl;
         }else{

@@ -8,9 +8,10 @@
 ********************************************************************************/
 
 
-#include "cDrawUart.h"
-
-int cDrawUart::openUart() {
+#include "CdrawUart.h"
+#define __MODULE_NAME__ "cdrawUart"
+int
+CdrawUart::openUart() {
     uart_fd_ = open(uart_name_.c_str(), O_RDWR | O_NOCTTY | O_SYNC);
     if (uart_fd_ < 0) {
         LOG_WITH_MODULE(ERROR) << "error " << errno << " opening " << uart_name_ << ": " << strerror(errno)
@@ -46,7 +47,8 @@ int cDrawUart::openUart() {
                       ICRNL);  // Disable any special handling of received bytes
     return 0;
 }
-int cDrawUart::uart_read(uint8_t * buf, int size){
+int
+CdrawUart::uart_read(uint8_t * buf, int size){
     if(uart_fd_ < 0){
         LOG_WITH_MODULE(ERROR) << "uart_fd_ is invalid";
         return -1;
@@ -54,7 +56,8 @@ int cDrawUart::uart_read(uint8_t * buf, int size){
     return read(uart_fd_, buf, size);
 }
 
-int cDrawUart::uart_write(uint8_t * buf, int size){
+int
+CdrawUart::uart_write(uint8_t * buf, int size){
     if(uart_fd_ < 0){
         LOG_WITH_MODULE(ERROR) << "uart_fd_ is invalid";
         return -1;

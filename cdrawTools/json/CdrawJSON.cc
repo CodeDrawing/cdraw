@@ -6,13 +6,14 @@ CdrawJSON::CdrawJSON(std::string(json_path), std::string(json_name), uint8_t(id)
     json_path_ = json_path;
     json_name_ = json_name;
     id_ = id;
+    full_path_ = json_path_ + "_" +json_name_;
 }
 CdrawJSON::~CdrawJSON(){
 
 }
 int
 CdrawJSON::file_exists() {
-    int ret = access(json_path_.c_str(), F_OK);
+    int ret = access(full_path_.c_str(), F_OK);
     if(ret == 0){
         LOG_WITH_MODULE(INFO) << "file exists ret = " << ret;
     } else {

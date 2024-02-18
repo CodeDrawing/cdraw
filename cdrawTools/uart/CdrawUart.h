@@ -19,10 +19,13 @@
 #include <termios.h>
 
 #include "module_glog.h"
+#include "CdrawJSON.h"
 
 
 class CdrawUart{
  private:
+    bool use_json_;
+    uint8_t id_;
     /**
      * @author: codeDrawing
      * @description: 串口的超时时间
@@ -60,7 +63,13 @@ class CdrawUart{
     std::string uart_name_;
     struct termios tty_;
 
-
+    /**
+     * @author: codeDrawing
+     * @description:    JSON配置
+     * @return:
+    */
+    CdrawJSON json_;
+    uartJSON uart_json_;
 
 
  public:
@@ -68,7 +77,8 @@ class CdrawUart{
      * @author: codeDrawing
      * @description:    构造函数，传入串口的设备名称
     */
-    CdrawUart(std::string uart_name) : uart_name_(uart_name_) {
+    CdrawUart(std::string uart_name, uint8_t id, const bool use_json, std::string json_path = "/etc/cdhf/uart_param.json"
+            , std::string json_name = "uart_param") : uart_name_(uart_name), id_(id), use_json_(use_json), json_(json_path, json_name, id) {
         std::cout << "uart init, uart_name: " << uart_name_ << std::endl;
     }
     /**
@@ -186,6 +196,26 @@ class CdrawUart{
         return uart_fd_;
     }
 
+    template<class T>
+    uint8_t init_by_json(void func(cJSON *, int, T*, int, int)){
+        if(use_json_ == true){
+            if(json_.file_exists() != 0){
+                //如果不存在，则根据本类的初始化参数，创建一个json文件
+                json_.call_init_json<uartJSON>(func, uart_json_);
+            }else{
+                uart_json_ = json_.get_by_json<uartJSON>(func);
+                uart_name_ = uart_json_.uart_name;
+                uart_read_timeout_ = uart_json_.timeout;
+                uart_read_size_ = uart_json_.read_size;
+                uart_in_speed_ = uart_json_.in_speed;
+                uart_out_speed_ = uart_json_.out_speed;
+            }
+        }else{
+            LOG_WITH_MODULE(WARNING) << "not use json file, please reset the net_json_ value";
+            return -1;
+        }
+        return 0;
+    }
 };
 
 

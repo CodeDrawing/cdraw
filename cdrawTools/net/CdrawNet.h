@@ -36,11 +36,11 @@ class CdrawNet {
     uint32_t remote_port_;
     struct sockaddr_in local_addr_;
     struct sockaddr_in remote_addr_;
-
-
- public:
     CdrawJSON json_;
     netJSON net_json_;
+
+ public:
+
     /**
      * @author: codeDrawing
      * @description: this class has two ways to init, one is localIp and remoteIp, another is localIp
@@ -110,7 +110,7 @@ class CdrawNet {
         if(use_json_ == true){
             if(json_.file_exists() != 0){
                 //如果不存在，则根据本类的初始化参数，创建一个json文件
-                json_.call_init_json<netJSON>(func, this->net_json_);
+                json_.call_init_json<netJSON>(func, net_json_);
             }else{
                 net_json_ = json_.get_by_json<netJSON>(func);
                 local_ip_ = net_json_.local_ip;

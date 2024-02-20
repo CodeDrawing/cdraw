@@ -15,7 +15,7 @@
 
 //#define CREATE_FILE
 #define WRITE_SPI_FLASH
-#define READ_SPI_FLASH
+//#define READ_SPI_FLASH
 #define __MODULE_NAME__ "CdrawMain"
 
 

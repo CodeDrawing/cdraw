@@ -100,6 +100,7 @@ class CdrawNet {
      * @description: get isWork_ value;
     */
     bool get_is_work();
+
     /**
      * @author: codeDrawing
      * @description:    依然不能放在.cc里面

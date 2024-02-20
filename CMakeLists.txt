@@ -51,7 +51,5 @@ add_executable(cdraw
                 ${CDRAW_TIME_SRC} ${CDRAW_NET_SRC} ${CDRAW_UART_SRC}
                 ${CDRAW_JSON_SRC} ${SFUD_INC} ${SFUD_SRC} ${SFUD_PORT}
                 ${CDRAW_SPI_SRC} ${CDRAW_CMT_SRC}
-        cdrawTools/common/commonTool.cc
-        cdrawTools/common/commonTool.h
 )
 target_link_libraries(cdraw ${lib})

@@ -43,12 +43,36 @@ get_check_sum_uint8(const uint8_t *data, const uint32_t start, const uint32_t en
 */
 template<typename T>
 inline bool
-cmp_check_sum(const T original_sum, const uint8_t data, const uint32_t start, const uint32_t end){
+cmp_check_sum(const T original_sum, const uint8_t *data, const uint32_t start, const uint32_t end){
     T t = 0;
-    t = get_check_sum_uint8(&data, start, end);
+    t = get_check_sum_uint8(data, start, end);
+    printf("t = %d\n", t);
+    printf("original_sum = %d\n", original_sum);
     return original_sum == t;
 }
 
+/**
+ * @author: codeDrawing
+ * @description:    进度条
+ * @return:
+*/
+void printProgress(float progress) {
+    int barWidth = 70; // 进度条的宽度
+
+    std::cout << "[";
+    int pos = barWidth * progress;
+    for (int i = 0; i < barWidth; ++i) {
+        if (i < pos) {
+            std::cout << "=";
+        } else if (i == pos) {
+            std::cout << ">";
+        } else {
+            std::cout << " ";
+        }
+    }
+    std::cout << "] " << int(progress * 100.0) << " %\r";
+    std::cout.flush(); // 清空输出缓冲区，立即显示进度条
+}
 class commonTool {
 
 };

@@ -671,7 +671,6 @@ static sfud_err page256_or_1_byte_write(const sfud_flash *flash, uint32_t addr, 
         addr += data_size;
 
         memcpy(&cmd_data[cmd_size], data, data_size);
-        printf("data_size: %02x\n", data_size);
         result = spi->wr(spi, cmd_data, cmd_size + data_size, NULL, 0);
         if (result != SFUD_SUCCESS) {
             SFUD_INFO("Error: Flash write SPI communicate error.");

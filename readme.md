@@ -6,7 +6,8 @@
 ## TODO
 - [x] fifo
 - [x] 运行态时间库
-- [ ] 串口库
+- [X] 串口库
+- [ ] SPI
 - [x] 网络库  
 - [ ] protobuf
 - [ ] nng

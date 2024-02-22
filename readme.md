@@ -7,12 +7,13 @@
 - [x] fifo
 - [x] 运行态时间库
 - [X] 串口库
-- [ ] SPI
+- [X] SPI
 - [x] 网络库  
 - [ ] protobuf
 - [ ] nng
-- [ ] json
+- [X] json
 - [x] glog
 - [ ] crypto
-- [ ] 工具(比如校验和...)
+- [半勾] 工具(比如校验和...)
+- [X] SFUD(SPI Flash开源库)
 - [ ] 返回状态，通过串口或者网络或者io输出

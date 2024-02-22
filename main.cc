@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
     sfud_flash *dev = sfud_get_device(0);
     uint8_t read_flash_data[103] = {0};
     printf("read_flash_data : \n");
-    uint32 read_addr = 0x0000000;
+    uint32 read_addr = 0x400000;
     time1->getTimeDiff();
     int read_len = 0;
 
@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
     read_len = read(bin_fd, bin_data, 1024 * 1024 * 1024);
     uint8_t sum = get_check_sum_uint8(bin_data, 0, read_len);
     std::cout << "read_len :" << read_len << std::endl;
-    sfud_erase_write(dev, 0x0000000, read_len, bin_data);
+    sfud_erase_write(dev, 0x400000, read_len, bin_data);
     std::cout << "write_spi_flash to chip success" << std::endl;
     free(bin_data);
 #endif
@@ -73,7 +73,6 @@ int main(int argc, char **argv) {
             tmp_bit = reinterpret_cast<uint8 *>(read_flash_data);
             write(read_bin_fd, tmp_bit, read_len - i * 100);
         }
-
     }
     //没关就会出现文件写入不完整
     close(read_bin_fd);

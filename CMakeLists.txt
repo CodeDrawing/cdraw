@@ -30,7 +30,9 @@ set(lib
     cJSON
 )
 
-aux_source_directory(. SRC)
+aux_source_directory(./main.cc SRC_MAIN)
+aux_source_directory(./test_sfud_c.c SRC_SFUD_TEST)
+
 aux_source_directory(3rdparty/glog GLOG_SRC)
 aux_source_directory(3rdparty/cxz_json/include CXZ_JSON_SRC)
 aux_source_directory(3rdparty/sfud/inc  SFUD_INC)
@@ -46,10 +48,21 @@ aux_source_directory(cdrawTools/common     CDRAW_CMT_SRC)
 
 add_compile_options(-fpermissive)
 
-add_executable(cdraw
-                ${SRC} ${GLOG_SRC} ${CDRAW_QUEUE_SRC}
+add_executable(cdraw_main
+                ${SRC_MAIN} ${GLOG_SRC} ${CDRAW_QUEUE_SRC}
                 ${CDRAW_TIME_SRC} ${CDRAW_NET_SRC} ${CDRAW_UART_SRC}
                 ${CDRAW_JSON_SRC} ${SFUD_INC} ${SFUD_SRC} ${SFUD_PORT}
                 ${CDRAW_SPI_SRC} ${CDRAW_CMT_SRC}
+        test_sfud_c.c
 )
-target_link_libraries(cdraw ${lib})
+
+add_executable(cdraw_sfud_test
+        ${SRC_SFUD_TEST} ${GLOG_SRC} ${CDRAW_QUEUE_SRC}
+        ${CDRAW_TIME_SRC} ${CDRAW_NET_SRC} ${CDRAW_UART_SRC}
+        ${CDRAW_JSON_SRC} ${SFUD_INC} ${SFUD_SRC} ${SFUD_PORT}
+        ${CDRAW_SPI_SRC} ${CDRAW_CMT_SRC}
+        test_sfud_c.c
+)
+
+target_link_libraries(cdraw_main ${lib})
+target_link_libraries(cdraw_sfud_test ${lib})

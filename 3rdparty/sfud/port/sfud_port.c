@@ -48,7 +48,6 @@ static sfud_err spi_write_read(const sfud_spi *spi, const uint8_t *write_buf, si
     /**
      * add your spi write and read code
      */
-
     int spi_size = write_size + read_size;
     uint8_t *tmp_buf=(uint8_t *) malloc(spi_size * sizeof(uint8_t));
     memset(tmp_buf, 0, spi_size);
@@ -96,15 +95,13 @@ sfud_err sfud_spi_port_init(sfud_flash *flash) {
     flash->retry.times = 10000;
     /**
      * @author: codeDrawing
-     * @description:
+     * @description:    初始化spi
      * @return:
     */
 
     flash->spi.spi = spi_new();
     spi_open(flash->spi.spi, "/dev/spidev4.0", 0, 20000000);
 
-//    spi_set_mode(spi, 1);
-//    spi_set_max_speed(spi, 25000000);
 
     return result;
 }

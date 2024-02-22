@@ -53,7 +53,7 @@ cmp_check_sum(const T original_sum, const uint8_t *data, const uint32_t start, c
 
 /**
  * @author: codeDrawing
- * @description:    进度条
+ * @description:    进度条,传入0-1的数值，某些终端可能不支持
  * @return:
 */
 void printProgress(float progress) {

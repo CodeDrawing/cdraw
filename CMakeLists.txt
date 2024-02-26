@@ -53,7 +53,6 @@ add_executable(cdraw_main
                 ${CDRAW_TIME_SRC} ${CDRAW_NET_SRC} ${CDRAW_UART_SRC}
                 ${CDRAW_JSON_SRC} ${SFUD_INC} ${SFUD_SRC} ${SFUD_PORT}
                 ${CDRAW_SPI_SRC} ${CDRAW_CMT_SRC}
-        test_sfud_c.c
 )
 
 add_executable(cdraw_sfud_test
@@ -61,7 +60,6 @@ add_executable(cdraw_sfud_test
         ${CDRAW_TIME_SRC} ${CDRAW_NET_SRC} ${CDRAW_UART_SRC}
         ${CDRAW_JSON_SRC} ${SFUD_INC} ${SFUD_SRC} ${SFUD_PORT}
         ${CDRAW_SPI_SRC} ${CDRAW_CMT_SRC}
-        test_sfud_c.c
 )
 
 # 创建动态库

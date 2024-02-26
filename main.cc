@@ -22,7 +22,8 @@
 
 
 
-int main(int argc, char **argv) {
+int
+main(int argc, char **argv) {
     log_init(argv[0]);
     CdrawTime *time1 = new CdrawTime();
 

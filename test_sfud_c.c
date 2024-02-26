@@ -9,7 +9,8 @@
 #define WRITE_SPI_FLASH
 #define READ_SPI_FLASH_100
 
-int main(){
+int
+main(){
     sfud_init();
     sfud_flash *dev = sfud_get_device(0);
     uint8_t read_flash_data[103] = {0};

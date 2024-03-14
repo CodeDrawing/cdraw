@@ -15,8 +15,8 @@
 //#define uart_json
 
 //#define CREATE_FILE
-#define WRITE_SPI_FLASH
-#define READ_SPI_FLASH_100
+//#define WRITE_SPI_FLASH
+//#define READ_SPI_FLASH_100
 #define __MODULE_NAME__ "CdrawMain"
 
 

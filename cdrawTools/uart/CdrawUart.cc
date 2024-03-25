@@ -20,6 +20,7 @@ CdrawUart::openUart() {
     }
     if (tcgetattr(uart_fd_, &tty_) < 0) {
         std::cout << "error " << errno << " from tcgetattr: " << strerror(errno) << std::endl;
+        LOG_WITH_MODULE(ERROR) << "error " << errno << " from tcgetattr: " << strerror(errno) << std::endl;
         return -1;
     }
 

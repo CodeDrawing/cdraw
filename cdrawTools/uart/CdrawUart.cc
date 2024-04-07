@@ -29,7 +29,7 @@ CdrawUart::openUart() {
     tty_.c_iflag &= ~IGNBRK;
     tty_.c_lflag = 0;        // 不使用信号字符，不回显
     tty_.c_oflag = 0;        // 不执行输出处理
-    tty_.c_cc[VMIN] = 0;    // 非阻塞读 // 0表示立即返回 1表示等待一个字符
+    tty_.c_cc[VMIN] = 1;    // 非阻塞读 // 0表示立即返回 1表示等待一个字符
     tty_.c_cc[VTIME] = 5;    // 0.5秒读超时 // 十分之n
 
     tty_.c_cflag &= ~PARENB;  // Clear parity bit, disabling parity (most common)

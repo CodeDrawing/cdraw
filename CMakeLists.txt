@@ -4,6 +4,17 @@ project(cdraw)
 set(CMAKE_CXX_STANDARD 17)
 add_definitions("-g")
 
+# 设置sysroot路径
+set(CMAKE_SYSROOT /home/codedrawing/work-dir/Tools/buildroot-2023.11/output/host/aarch64-buildroot-linux-gnu/sysroot)
+
+#设置编译器和连接器
+set(CMAKE_C_COMPILER /home/codedrawing/work-dir/Tools/buildroot-2023.11/output/host/bin/aarch64-linux-gcc)
+set(CMAKE_CXX_COMPILER /home/codedrawing/work-dir/Tools/buildroot-2023.11/output/host/bin/aarch64-linux-g++)
+set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+
+set(CMAKE_FIND_ROOT_PATH /home/codedrawing/work-dir/Tools/buildroot-2023.11/output/host/aarch64-buildroot-linux-gnu/sysroot)
 #set (cxz_json_path		${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/cxz_json)
 include_directories(
         #${glog_path}/include

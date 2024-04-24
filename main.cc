@@ -34,7 +34,7 @@ main(int argc, char **argv) {
     uint32 read_addr = 0x400000;
     time1->getTimeDiff();
     int read_len = 0;
-
+    // uint8_t sum = get_check_sum_uint8(bin_data, 0, read_len);
 #ifdef CREATE_FILE
     uint8_t buf[10] = {0x5a, 0x5a, 0x5a, 0x5a ,0x11, 0x22, 0x33, 0x44, 0x55, 0x66};
     int create_file_fd  = open("/home/cdhf/zx/hf_0242_xc7k325t.bin", O_RDWR | O_CREAT, 0666);
@@ -52,7 +52,7 @@ main(int argc, char **argv) {
     }
     uint8_t *bin_data = (uint8_t *)malloc(1024 * 1024 * 1024);
     read_len = read(bin_fd, bin_data, 1024 * 1024 * 1024);
-    uint8_t sum = get_check_sum_uint8(bin_data, 0, read_len);
+
     std::cout << "read_len :" << read_len << std::endl;
     sfud_erase_write(dev, 0x400000, read_len, bin_data);
     std::cout << "write_spi_flash to chip success" << std::endl;
@@ -81,7 +81,7 @@ main(int argc, char **argv) {
     read(read_tmp_fd, tmp_buf, read_len);
     std::cout << "read_flash_data to file success " << std::endl;
 #endif
-    std::cout << "check sum result: " << cmp_check_sum<uint8_t>(sum, tmp_buf, 0, (uint32_t)read_len)<< std::endl;
+    //std::cout << "check sum result: " << cmp_check_sum<uint8_t>(sum, tmp_buf, 0, (uint32_t)read_len)<< std::endl;
     time1->getTimeDiff();
 
     printf("\n");

@@ -15,6 +15,9 @@ set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 
 set(CMAKE_FIND_ROOT_PATH /home/codedrawing/work-dir/Tools/buildroot-2023.11/output/host/aarch64-buildroot-linux-gnu/sysroot)
+
+set(CMAKE_INSTALL_PREFIX /home/codedrawing/work-dir/cDrawEnv)
+
 #set (cxz_json_path		${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/cxz_json)
 include_directories(
         #${glog_path}/include
@@ -41,8 +44,8 @@ set(lib
     cJSON
 )
 
-aux_source_directory(./main.cc SRC_MAIN)
-aux_source_directory(./test_sfud_c.c SRC_SFUD_TEST)
+FILE (GLOB SRC_MAIN . main.cc)
+FILE (GLOB SRC_SFUD_TEST . test_sfud_c.c)
 
 aux_source_directory(3rdparty/glog GLOG_SRC)
 aux_source_directory(3rdparty/cxz_json/include CXZ_JSON_SRC)
@@ -92,3 +95,23 @@ add_library(cDrawS STATIC
 
 target_link_libraries(cdraw_main ${lib})
 target_link_libraries(cdraw_sfud_test ${lib})
+
+# 添加cdrawTools的头文件
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cdrawTools/
+        DESTINATION include/cdrawTools
+        FILES_MATCHING PATTERN "*.h")
+
+# 添加cdrawStruct的头文件
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cdrawStruct/
+        DESTINATION include/cdrawStruct
+        FILES_MATCHING PATTERN "*.h")
+
+# 安装可执行文件、库文件和头文件
+install(TARGETS cdraw_main cDrawD cDrawS
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib)
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/
+        DESTINATION include/3rdparty
+        FILES_MATCHING PATTERN "*.h")

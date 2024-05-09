@@ -31,21 +31,38 @@ include_directories(
         ${CMAKE_CURRENT_SOURCE_DIR}/cdrawTools/json
         ${CMAKE_CURRENT_SOURCE_DIR}/cdrawTools/spi
         ${CMAKE_CURRENT_SOURCE_DIR}/cdrawTools/common
+        ${CMAKE_CURRENT_SOURCE_DIR}/cdrawTools/OSD
 )
+include_directories(/home/codedrawing/work-dir/Tools/buildroot-2023.11/output/host/aarch64-buildroot-linux-gnu/sysroot/usr/include/freetype2/)
+include_directories(/home/codedrawing/work-dir/cDrawEnv/include)
+include_directories(/home/codedrawing/work-dir/Tools/buildroot-2023.11/output/host/aarch64-buildroot-linux-gnu/sysroot/usr/include/drm/)
 
 link_directories(
         #${glog_path}/lib
         #${cxz_json_path}/lib
         ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/cxz_json/lib
 )
+link_directories(/home/codedrawing/work-dir/cDrawEnv/lib)
 
 set(lib
-    glog
-    cJSON
+        glog
+        cJSON
+
+)
+set(drm_lib
+        glog
+        cJSON
+        freetype
+        drm
+        cDrawS
+        mali
+
 )
 
 FILE (GLOB SRC_MAIN . main.cc)
 FILE (GLOB SRC_SFUD_TEST . test_sfud_c.c)
+
+FILE (GLOB SRC_DRM_TEST . test-drm-full.cc)
 
 aux_source_directory(3rdparty/glog GLOG_SRC)
 aux_source_directory(3rdparty/cxz_json/include CXZ_JSON_SRC)
@@ -59,6 +76,7 @@ aux_source_directory(cdrawTools/uart    CDRAW_UART_SRC)
 aux_source_directory(cdrawTools/json    CDRAW_JSON_SRC)
 aux_source_directory(cdrawTools/spi     CDRAW_SPI_SRC)
 aux_source_directory(cdrawTools/common     CDRAW_CMT_SRC)
+aux_source_directory(cdrawTools/OSD     CDRAW_OSD_SRC)
 
 add_compile_options(-fpermissive)
 
@@ -74,6 +92,13 @@ add_executable(cdraw_sfud_test
         ${CDRAW_TIME_SRC} ${CDRAW_NET_SRC} ${CDRAW_UART_SRC}
         ${CDRAW_JSON_SRC} ${SFUD_INC} ${SFUD_SRC} ${SFUD_PORT}
         ${CDRAW_SPI_SRC} ${CDRAW_CMT_SRC}
+)
+
+add_executable(test_drm_full
+        ${SRC_DRM_TEST} ${GLOG_SRC} ${CDRAW_QUEUE_SRC}
+        ${CDRAW_TIME_SRC} ${CDRAW_NET_SRC} ${CDRAW_UART_SRC}
+        ${CDRAW_JSON_SRC} ${SFUD_INC} ${SFUD_SRC} ${SFUD_PORT}
+        ${CDRAW_SPI_SRC} ${CDRAW_CMT_SRC} ${CDRAW_OSD_SRC}
 )
 
 # 创建动态库
@@ -93,8 +118,10 @@ add_library(cDrawS STATIC
 )
 
 
+
 target_link_libraries(cdraw_main ${lib})
 target_link_libraries(cdraw_sfud_test ${lib})
+target_link_libraries(test_drm_full ${drm_lib})
 
 # 添加cdrawTools的头文件
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cdrawTools/
@@ -107,7 +134,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cdrawStruct/
         FILES_MATCHING PATTERN "*.h")
 
 # 安装可执行文件、库文件和头文件
-install(TARGETS cdraw_main cDrawD cDrawS
+install(TARGETS test_drm_full cDrawD cDrawS
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)
@@ -115,3 +142,4 @@ install(TARGETS cdraw_main cDrawD cDrawS
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/
         DESTINATION include/3rdparty
         FILES_MATCHING PATTERN "*.h")
+

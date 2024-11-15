@@ -30,6 +30,7 @@
  */
 
 #define _GNU_SOURCE
+
 #include <errno.h>
 #include <fcntl.h>
 #include <stdbool.h>
@@ -45,7 +46,7 @@
 #include <wchar.h>
 
 
-#include <cdrawTools/runTime/CdrawTime.h>
+//#include <cdrawTools/runTime/CdrawTime.h>
 #include <CL/cl.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -54,7 +55,7 @@
 
 
 
-CdrawTime *time2 = new CdrawTime();
+//CdrawTime *time2 = new CdrawTime();
 
 // #define together
 struct modeset_dev;
@@ -70,7 +71,7 @@ static void modeset_cleanup(int fd);
 
 void swap(uint32_t *task);
 #ifdef together
-void process_font(unsigned char *imageBuffer);
+void process_font(unsigned char *image_buffer_);
 #else
 void process_font(struct sClProcesser *clProcesser, int swap_format = 0);
 #endif
@@ -659,7 +660,7 @@ static uint8_t next_color(bool *up, uint8_t cur, unsigned int mod)
 #define IMG_WIDTH 1920
 #define IMG_HEIGHT 1080
 #define IMG_DEEP 4
-CdrawTime time1 = CdrawTime();
+//CdrawTime time1 = CdrawTime();
 static void modeset_draw(void)
 {
 
@@ -672,8 +673,8 @@ static void modeset_draw(void)
     clProcesser.cl_kernel_init();
     int file_fd = open("output_image.bmp", O_RDONLY);
     //lseek(file_fd, 0, SEEK_SET);
-    // unsigned char * tmpBuf = (uint8_t *)malloc(clProcesser.bufferSize);
-    unsigned char * originBuf = (uint8_t *)malloc(clProcesser.bufferSize);
+    // unsigned char * tmpBuf = (uint8_t *)malloc(clProcesser.buffer_size_);
+    unsigned char * originBuf = (uint8_t *)malloc(clProcesser.buffer_size_);
     // CdrawTime *time1 = new CdrawTime();
     int r_size = read(file_fd, originBuf, IMG_WIDTH*IMG_HEIGHT  * IMG_DEEP);
 
@@ -682,9 +683,9 @@ static void modeset_draw(void)
     unsigned char *line = (unsigned char *)malloc(500);
     memset(line, 0xFF, 500);
     uint8_t *cross_buf = clProcesser.draw_cross(200, 200);
-    //My_cl_kernel_init(program, queue, context, kernel, kernelSource);
+    //My_cl_kernel_init(program, queue, context_, kernel, kernelSource);
     //process_font(tmpBuf);
-    //unsigned char *ptr= clProcesser.imageBuffer;
+    //unsigned char *ptr= clProcesser.image_buffer_;
     uint32_t font_num = 'A';
 
     int integer_num = 200;
@@ -694,7 +695,7 @@ static void modeset_draw(void)
         if(num % 20 == 0)
             integer_num++;
         decimal_num++;
-        memcpy(clProcesser.imageBuffer, originBuf, clProcesser.bufferSize);
+        memcpy(clProcesser.image_buffer_, originBuf, clProcesser.buffer_size_);
 
         int l = 0;
         //画波门
@@ -714,7 +715,7 @@ static void modeset_draw(void)
         // 画yaw尺
         static int yaw_r_position = 50;
         static int yaw_c_position = 400;
-        static int yaw_width = (clProcesser.img_width - 400 * 2);
+        static int yaw_width = (clProcesser.img_width_ - 400 * 2);
         static int yaw_rows = 9;
 
         uint8_t *yaw_buf = clProcesser.draw_yaw_rule(yaw_width, yaw_rows, 3, 0);
@@ -728,7 +729,7 @@ static void modeset_draw(void)
 
         wchar_t *wstr = L"发发发射击发发射击发发射发发射击发发射击发发射击发发射击发发射击发发射击发发射击发";
         // 显示字符
-        time1.getTimeDiff(true);
+//        time1.getTimeDiff(true);
         int num_base;
 
         for (l = 3; l < 30; ++l) {
@@ -741,7 +742,6 @@ static void modeset_draw(void)
             }
 
             clProcesser.create_font_add_array(l, wstr[num_base+l], status_show_r, status_show_c+=font_size , font_size);
-
         }
         // 数字显示区 3位整数，3位小数
         int number_show_r = 300;
@@ -749,13 +749,13 @@ static void modeset_draw(void)
         int number_font_size = 30;
 //        int before_num = l;
         wchar_t point = '.';
-        clProcesser.create_font_add_array(l++, *std::to_string((integer_num /100) % 10).c_str(), number_show_r, number_show_c+=clProcesser.fontAttr_array[l-1].font_width*1.5 , number_font_size); // 百位
-        clProcesser.create_font_add_array(l++, *std::to_string((integer_num /10) % 10).c_str(), number_show_r, number_show_c+=clProcesser.fontAttr_array[l-1].font_width*1.5 , number_font_size); // 十位
-        clProcesser.create_font_add_array(l++, *std::to_string(integer_num % 10).c_str(), number_show_r, number_show_c+=clProcesser.fontAttr_array[l-1].font_width*1.5 , number_font_size); // 个位
-        clProcesser.create_font_add_array(l++, point, number_show_r+number_font_size-10, number_show_c+=clProcesser.fontAttr_array[l-1].font_width*3.5 , number_font_size); // .
-        clProcesser.create_font_add_array(l++, *std::to_string((decimal_num /100) % 10).c_str(), number_show_r, number_show_c+=clProcesser.fontAttr_array[l-1].font_width*1.5 , number_font_size); // 十分位
-        clProcesser.create_font_add_array(l++, *std::to_string((decimal_num /10) % 10).c_str(), number_show_r, number_show_c+=clProcesser.fontAttr_array[l-1].font_width*1.5 , number_font_size); // 百分位
-        clProcesser.create_font_add_array(l++, *std::to_string(decimal_num % 10).c_str(), number_show_r, number_show_c+=clProcesser.fontAttr_array[l-1].font_width*1.5 , number_font_size); // 千分位
+        clProcesser.create_font_add_array(l++, *std::to_string((integer_num /100) % 10).c_str(), number_show_r, number_show_c+=clProcesser.fontAttr_array_[l-1].font_width_*1.5 , number_font_size); // 百位
+        clProcesser.create_font_add_array(l++, *std::to_string((integer_num /10) % 10).c_str(), number_show_r, number_show_c+=clProcesser.fontAttr_array_[l-1].font_width_*1.5 , number_font_size); // 十位
+        clProcesser.create_font_add_array(l++, *std::to_string(integer_num % 10).c_str(), number_show_r, number_show_c+=clProcesser.fontAttr_array_[l-1].font_width_*1.5 , number_font_size); // 个位
+        clProcesser.create_font_add_array(l++, point, number_show_r+number_font_size-10, number_show_c+=clProcesser.fontAttr_array_[l-1].font_width_*3.5 , number_font_size); // .
+        clProcesser.create_font_add_array(l++, *std::to_string((decimal_num /100) % 10).c_str(), number_show_r, number_show_c+=clProcesser.fontAttr_array_[l-1].font_width_*1.5 , number_font_size); // 十分位
+        clProcesser.create_font_add_array(l++, *std::to_string((decimal_num /10) % 10).c_str(), number_show_r, number_show_c+=clProcesser.fontAttr_array_[l-1].font_width_*1.5 , number_font_size); // 百分位
+        clProcesser.create_font_add_array(l++, *std::to_string(decimal_num % 10).c_str(), number_show_r, number_show_c+=clProcesser.fontAttr_array_[l-1].font_width_*1.5 , number_font_size); // 千分位
 
 
 
@@ -764,8 +764,8 @@ static void modeset_draw(void)
         clProcesser.process_font();
 //        time1.getTimeDiff(true);
         for (iter = modeset_list; iter; iter = iter->next) {
-            memcpy(iter->map, clProcesser.imageBuffer, clProcesser.bufferSize);
-            //ptr = clProcesser.imageBuffer; // 重置ptr到缓冲区开始
+            memcpy(iter->map, clProcesser.image_buffer_, clProcesser.buffer_size_);
+            //ptr = clProcesser.image_buffer_; // 重置ptr到缓冲区开始
         }
 
         //usleep(0);

@@ -7,7 +7,7 @@
 
 #include <CL/cl.h>
 #include <ft2build.h>
-
+#define osd_json
 #include <iostream>
 #include <unistd.h>
 #include <fcntl.h>
@@ -15,9 +15,10 @@
 #include <stdlib.h>
 
 #include "font_attr.h"
+#include "CdrawJSON.h"
 #include FT_FREETYPE_H
 
-#define FONT_ARRAY_SIZE (256)
+#define FONT_ARRAY_SIZE (30)
 
 //struct sFontAttr{
 //    int id;
@@ -37,28 +38,31 @@ private:
     char *opencl_kernel_;
     char *opencl_kernel_function_;
     char *tff_path_;
-    unsigned char *all_font_buffer;
+    unsigned char *all_font_buffer_;
 public:
     /* variable */
-    cl_program program;
-    cl_command_queue queue;
-    cl_context context;
-    cl_kernel kernel;
+    cl_program program_;
+    cl_command_queue queue_;
+    cl_context context_;
+    cl_kernel kernel_;
 
-    size_t img_width;
-    size_t img_height;
-    size_t bufferSize;
-    int deeping;
-    unsigned char *imageBuffer;
-    FT_Library ft;
-    FT_Face face;
-    struct sFontAttr fontAttr_array[FONT_ARRAY_SIZE];
+    size_t img_width_;
+    size_t img_height_;
+    size_t buffer_size_;
+    int deeping_;
+    unsigned char *image_buffer_;
+    FT_Library ft_;
+    FT_Face face_;
+    struct sFontAttr fontAttr_array_[FONT_ARRAY_SIZE];
+    CdrawJSON json_;
+    osdJSONArray osd_json_;
 
     /* function */
-//    COSD_OpenCL(char *opencl_kernel_path, char *opencl_kernel_function, char *tff_path, size_t img_width, size_t img_height, int deeping);
+//    COSD_OpenCL(char *opencl_kernel_path, char *opencl_kernel_function, char *tff_path, size_t img_width_, size_t img_height_, int deeping_);
 
     COSD_OpenCL(char *openclKernel, char *openclKernelFunction, char *tffPath, size_t imgWidth,
-                size_t imgHeight, int deeping);
+                size_t imgHeight, int deeping, const std::string json_path = "/etc/cdhf/",
+                const std::string json_name = "osd_param.json", int id = 0);
 
     ~COSD_OpenCL();
     uint8_t cl_kernel_init();
@@ -88,6 +92,28 @@ public:
     uint8_t *draw_box(int box_width, int box_height, int pound_width, int type = 0);
 
     uint8_t *draw_yaw_rule(int rule_width, int rule_height, int part_num, int type = 0);
+
+    template<class T>
+    uint8_t init_by_json(void func(cJSON *, int, T*, int, int)){
+            if(json_.file_exists() != 0){
+                //如果不存在，则根据本类的初始化参数，创建一个json文件
+                memset(&osd_json_, 0, sizeof(osdJSONArray));
+                json_.call_init_json<osdJSONArray>(func, osd_json_);
+            }else{
+                for(int i = 0; i < FONT_ARRAY_SIZE; i++){
+                    osd_json_ = json_.get_by_json<osdJSONArray>(func);
+                    fontAttr_array_[i].id_ = osd_json_.osdJSONs[i].id;
+                    fontAttr_array_[i].used_ = osd_json_.osdJSONs[i].used;
+                    fontAttr_array_[i].font_select_ = osd_json_.osdJSONs[i].font_select;
+                    fontAttr_array_[i].r_position_ = osd_json_.osdJSONs[i].r_position;
+                    fontAttr_array_[i].c_position_ = osd_json_.osdJSONs[i].c_position;
+                    fontAttr_array_[i].font_size_ = osd_json_.osdJSONs[i].font_size;
+                }
+            }
+
+
+        return 0;
+    }
 };
 
 

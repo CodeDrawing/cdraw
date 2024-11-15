@@ -8,34 +8,36 @@
 
 
 COSD_OpenCL::COSD_OpenCL(char *openclKernel, char *openclKernelFunction, char *tffPath,
-                         size_t imgWidth, size_t imgHeight, int deeping) :
+                         size_t imgWidth, size_t imgHeight, int deeping, const std::string json_path, const std::string json_name, int id) :
         opencl_kernel_(openclKernel), opencl_kernel_function_(openclKernelFunction),
-        tff_path_(tffPath), img_width(imgWidth), img_height(imgHeight),
-        deeping(deeping), imageBuffer(imageBuffer) {
+        tff_path_(tffPath), img_width_(imgWidth), img_height_(imgHeight),
+        deeping_(deeping), json_(json_path, json_name, id){
 
-    this->bufferSize = this->img_height * this->img_width * this->deeping;
-    this->imageBuffer = (unsigned char *) malloc(sizeof(uint8_t) * this->bufferSize);
-    this->all_font_buffer = (unsigned char *) malloc(sizeof(uint8_t) * this->img_width * this->img_height);
-    memset(this->imageBuffer, 0, this->bufferSize);
-    memset(this->all_font_buffer, 0, this->img_width * this->img_height);
+    this->buffer_size_ = this->img_height_ * this->img_width_ * this->deeping_;
+    this->image_buffer_ = (unsigned char *) malloc(sizeof(uint8_t) * this->buffer_size_);
+    this->all_font_buffer_ = (unsigned char *) malloc(sizeof(uint8_t) * this->img_width_ * this->img_height_);
+    memset(this->image_buffer_, 0, this->buffer_size_);
+    memset(this->all_font_buffer_, 0, this->img_width_ * this->img_height_);
+    memset(this->fontAttr_array_, 0, sizeof(this->fontAttr_array_));
+    init_by_json<osdJSONArray>(sjb_bind_osdJSONArray);
 }
 
 COSD_OpenCL::~COSD_OpenCL() {
-    clReleaseProgram(this->program);
-    clReleaseCommandQueue(this->queue);
-    clReleaseContext(this->context);
-    clReleaseKernel(this->kernel);
-    FT_Done_Face(this->face);
-    FT_Done_FreeType(this->ft);
-    free(imageBuffer);
-    free(all_font_buffer);
+    clReleaseProgram(this->program_);
+    clReleaseCommandQueue(this->queue_);
+    clReleaseContext(this->context_);
+    clReleaseKernel(this->kernel_);
+    FT_Done_Face(this->face_);
+    FT_Done_FreeType(this->ft_);
+    free(image_buffer_);
+    free(all_font_buffer_);
 }
 
 uint8_t COSD_OpenCL::cl_kernel_init() {
     char *kernelSource = (char *) malloc(MAX_SOURCE_SIZE);
     FILE *kernelFile = fopen(this->opencl_kernel_, "r");
     if (kernelFile == NULL) {
-        fprintf(stderr, "Cannot open kernel source file.\n");
+        fprintf(stderr, "Cannot open kernel_ source file.\n");
         return CL_BUILD_ERROR;
     }
 
@@ -49,67 +51,80 @@ uint8_t COSD_OpenCL::cl_kernel_init() {
     cl_int ret = clGetPlatformIDs(1, &platformId, &numPlatforms);
     ret = clGetDeviceIDs(platformId, CL_DEVICE_TYPE_GPU, 1, &deviceId, &numDevices);
 
-    this->context = clCreateContext(NULL, 1, &deviceId, NULL, NULL, &ret);
+    this->context_ = clCreateContext(NULL, 1, &deviceId, NULL, NULL, &ret);
     if (ret != CL_SUCCESS) {
         printf("ERROR clCreateContext: %s\n", NULL);
         return CL_BUILD_ERROR;
     }
-    this->queue = clCreateCommandQueue(this->context, deviceId, 0, &ret);
+    this->queue_ = clCreateCommandQueue(this->context_, deviceId, 0, &ret);
     if (ret != CL_SUCCESS) {
-        printf("Error creating command queue: %d\n", ret);
+        printf("Error creating command queue_: %d\n", ret);
         return CL_BUILD_ERROR; // 或其他适当的错误处理
     }
 
-    this->program = clCreateProgramWithSource(this->context, 1, (const char **) &kernelSource,
+    this->program_ = clCreateProgramWithSource(this->context_, 1, (const char **) &kernelSource,
                                               (const size_t *) &sourceSize, &ret);
 
-    ret = clBuildProgram(this->program, 1, &deviceId, NULL, NULL, NULL);
+    ret = clBuildProgram(this->program_, 1, &deviceId, NULL, NULL, NULL);
     if (ret != CL_SUCCESS) {
         // Error handling for failed compilation
         size_t log_size;
-        clGetProgramBuildInfo(this->program, deviceId, CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
+        clGetProgramBuildInfo(this->program_, deviceId, CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
         char *log = (char *) malloc(log_size);
-        clGetProgramBuildInfo(this->program, deviceId, CL_PROGRAM_BUILD_LOG, log_size, log, NULL);
+        clGetProgramBuildInfo(this->program_, deviceId, CL_PROGRAM_BUILD_LOG, log_size, log, NULL);
         printf("0.OpenCL error with code %d happened.\n", ret);
         fprintf(stderr, "%s\n", log);
         free(log);
         return CL_BUILD_ERROR;
     }
-    this->kernel = clCreateKernel(this->program, this->opencl_kernel_function_, &ret);
+    this->kernel_ = clCreateKernel(this->program_, this->opencl_kernel_function_, &ret);
     if (ret != CL_SUCCESS) {
-        printf("Error creating kernel: %d\n", ret);
+        printf("Error creating kernel_: %d\n", ret);
         // 处理错误
         return CL_BUILD_ERROR;
     }
 
     // 查询设备的最大工作组大小：
     size_t maxWorkGroupSize;
-    clGetKernelWorkGroupInfo(this->kernel, deviceId, CL_KERNEL_WORK_GROUP_SIZE, sizeof(maxWorkGroupSize),
+    clGetKernelWorkGroupInfo(this->kernel_, deviceId, CL_KERNEL_WORK_GROUP_SIZE, sizeof(maxWorkGroupSize),
                              &maxWorkGroupSize, NULL);
-    printf("Max work group size for this kernel: %zu\n", maxWorkGroupSize);
+    printf("Max work group size for this kernel_: %zu\n", maxWorkGroupSize);
 
     // 字库
-    FT_Init_FreeType(&this->ft);
-    FT_New_Face(this->ft, this->tff_path_, 0, &this->face);
+    FT_Init_FreeType(&this->ft_);
+    FT_New_Face(this->ft_, this->tff_path_, 0, &this->face_);
+    /**
+     * test
+     */
+    for (int i = 0; i < FONT_ARRAY_SIZE; ++i) {
+        if(this->fontAttr_array_[i].used_ == 0){
+            continue;
+        }
+        printf("fontAttr_array_[i].id_: %d\n", fontAttr_array_[i].id_);
+        printf("fontAttr_array_[i].font_select_: %d\n", fontAttr_array_[i].font_select_);
+        printf("fontAttr_array_[i].r_position_: %d\n", fontAttr_array_[i].r_position_);
+        printf("fontAttr_array_[i].c_position_: %d\n", fontAttr_array_[i].c_position_);
+    }
+
     return CL_SUCCESS;
 }
 
 uint8_t COSD_OpenCL::create_font_add_array(int id, int font_select, int r_position, int c_position, uint8_t font_size,
                                            unsigned char *buf, unsigned int font_width, unsigned int font_rows) {
     //printf("id: %d\n", id);
-    this->fontAttr_array[id].used = true;
-    this->fontAttr_array[id].id = id;
-    this->fontAttr_array[id].font_select = font_select;
-    this->fontAttr_array[id].r_position = r_position;
-    this->fontAttr_array[id].c_position = c_position;
-    this->fontAttr_array[id].font_size = font_size;
+    this->fontAttr_array_[id].used_ = true;
+    this->fontAttr_array_[id].id_ = id;
+    this->fontAttr_array_[id].font_select_ = font_select;
+    this->fontAttr_array_[id].r_position_ = r_position;
+    this->fontAttr_array_[id].c_position_ = c_position;
+    this->fontAttr_array_[id].font_size_ = font_size;
 
     if (font_select == 0) {
-        if (font_width > this->img_width) {
-            font_width = this->img_width;
+        if (font_width > this->img_width_) {
+            font_width = this->img_width_;
         }
-        if (font_rows > this->img_height) {
-            font_rows = this->img_height;
+        if (font_rows > this->img_height_) {
+            font_rows = this->img_height_;
         }
         if (font_width <= 0) {
             font_width = 0;
@@ -117,21 +132,21 @@ uint8_t COSD_OpenCL::create_font_add_array(int id, int font_select, int r_positi
         if (font_rows <= 0) {
             font_rows = 0;
         }
-        this->fontAttr_array[id].font_width = font_width;
-        this->fontAttr_array[id].font_rows = font_rows;
-        this->fontAttr_array[id].bitmap_buffer = buf;
+        this->fontAttr_array_[id].font_width_ = font_width;
+        this->fontAttr_array_[id].font_rows_ = font_rows;
+        this->fontAttr_array_[id].bitmap_buffer_ = buf;
     } else {
-        FT_Set_Pixel_Sizes(this->face, 0, this->fontAttr_array[id].font_size);
-        FT_Load_Char(this->face, this->fontAttr_array[id].font_select, FT_LOAD_RENDER);
-        FT_Bitmap bitmap = this->face->glyph->bitmap;
+        FT_Set_Pixel_Sizes(this->face_, 0, this->fontAttr_array_[id].font_size_);
+        FT_Load_Char(this->face_, this->fontAttr_array_[id].font_select_, FT_LOAD_RENDER);
+        FT_Bitmap bitmap = this->face_->glyph->bitmap;
 
-        this->fontAttr_array[id].font_width = bitmap.width;
-        this->fontAttr_array[id].font_rows = bitmap.rows;
+        this->fontAttr_array_[id].font_width_ = bitmap.width;
+        this->fontAttr_array_[id].font_rows_ = bitmap.rows;
 
-        this->fontAttr_array[id].bitmap_size = bitmap.width * bitmap.rows;
-        unsigned char *bitmap_buffer = (unsigned char *) malloc(this->fontAttr_array[id].bitmap_size);
-        memcpy(bitmap_buffer, bitmap.buffer, this->fontAttr_array[id].bitmap_size);
-        this->fontAttr_array[id].bitmap_buffer = bitmap_buffer;  // 这里获取的是字形的灰度位图
+        this->fontAttr_array_[id].bitmap_size_ = bitmap.width * bitmap.rows;
+        unsigned char *bitmap_buffer = (unsigned char *) malloc(this->fontAttr_array_[id].bitmap_size_);
+        memcpy(bitmap_buffer, bitmap.buffer, this->fontAttr_array_[id].bitmap_size_);
+        this->fontAttr_array_[id].bitmap_buffer_ = bitmap_buffer;  // 这里获取的是字形的灰度位图
     }
 
     return 0;
@@ -143,19 +158,19 @@ void COSD_OpenCL::process_font() {
     /*
      * 处理字符，把所有可用的字符位图拷贝到一个大的图像缓冲区中
      * */
-    memset(all_font_buffer, 0, this->img_width * this->img_height);
+    memset(all_font_buffer_, 0, this->img_width_ * this->img_height_);
     for (int i = 0; i < FONT_ARRAY_SIZE; i++) {
-        if (!this->fontAttr_array[i].used) {
+        if (!this->fontAttr_array_[i].used_) {
             continue;
         }
 
-        this->copyBitmapToImage(this->fontAttr_array[i].bitmap_buffer, all_font_buffer,
-                                this->fontAttr_array[i].font_width, this->fontAttr_array[i].font_rows,
-                                this->fontAttr_array[i].r_position, this->fontAttr_array[i].c_position, this->img_width,
-                                this->img_height);
-//        for (int ia = 0; ia < this->fontAttr_array[i].font_rows; ++ia) {
-//            for (int ja = 0; ja < this->fontAttr_array[i].font_width; ++ja) {
-//                printf("%02x ", this->fontAttr_array[i].bitmap_buffer[ia * this->fontAttr_array[i].font_width + ja]);
+        this->copyBitmapToImage(this->fontAttr_array_[i].bitmap_buffer_, all_font_buffer_,
+                                this->fontAttr_array_[i].font_width_, this->fontAttr_array_[i].font_rows_,
+                                this->fontAttr_array_[i].r_position_, this->fontAttr_array_[i].c_position_, this->img_width_,
+                                this->img_height_);
+//        for (int ia = 0; ia < this->fontAttr_array_[i].font_rows; ++ia) {
+//            for (int ja = 0; ja < this->fontAttr_array_[i].font_width; ++ja) {
+//                printf("%02x ", this->fontAttr_array_[i].bitmap_buffer[ia * this->fontAttr_array_[i].font_width + ja]);
 //            }
 //            printf("\n");
 //        }
@@ -164,51 +179,51 @@ void COSD_OpenCL::process_font() {
     //exit(0);
 
     cl_int ret;
-    cl_mem imgBuf = clCreateBuffer(this->context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, this->bufferSize,
-                                   this->imageBuffer, &ret);
+    cl_mem imgBuf = clCreateBuffer(this->context_, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, this->buffer_size_,
+                                   this->image_buffer_, &ret);
     if (ret != CL_SUCCESS) {
         printf("0.OpenCL error with code %d happened.\n", ret);
         // 根据错误代码决定后续操作
     }
-    // Setup kernel arguments
-    clSetKernelArg(this->kernel, 0, sizeof(cl_mem), &imgBuf);
-    clSetKernelArg(this->kernel, 1, sizeof(int), &this->img_width);
-    clSetKernelArg(this->kernel, 2, sizeof(int), &this->img_height);
-    cl_mem fontArray = clCreateBuffer(this->context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
-                                      this->img_width * this->img_height, all_font_buffer, &ret);
+    // Setup kernel_ arguments
+    clSetKernelArg(this->kernel_, 0, sizeof(cl_mem), &imgBuf);
+    clSetKernelArg(this->kernel_, 1, sizeof(int), &this->img_width_);
+    clSetKernelArg(this->kernel_, 2, sizeof(int), &this->img_height_);
+    cl_mem fontArray = clCreateBuffer(this->context_, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
+                                      this->img_width_ * this->img_height_, all_font_buffer_, &ret);
     if (ret != CL_SUCCESS) {
         printf("1.3. clCreateBuffer OpenCL error with code %d happened.\n", ret);
         // 根据错误代码决定后续操作
     }
-    clSetKernelArg(this->kernel, 3, sizeof(cl_mem), &fontArray);
+    clSetKernelArg(this->kernel_, 3, sizeof(cl_mem), &fontArray);
 
 
-    size_t globalSize[2] = {this->img_width, this->img_height};
+    size_t globalSize[2] = {this->img_width_, this->img_height_};
     size_t localSize[2] = {16, 16}; // Set local size depending on device capabilities
-    ret = clEnqueueNDRangeKernel(this->queue, this->kernel, 2, NULL, globalSize, NULL, 0, NULL, NULL);
+    ret = clEnqueueNDRangeKernel(this->queue_, this->kernel_, 2, NULL, globalSize, NULL, 0, NULL, NULL);
     if (ret != CL_SUCCESS) {
         printf("1.2.OpenCL error with code %d happened.\n", ret);
         // 根据错误代码决定后续操作
     }
-//    for (int i = 0; i < this->fontAttr_array[0].font_rows; ++i) {
-//        for (int j = 0; j < this->fontAttr_array[0].font_width; ++j) {
-//            printf("%02x ", this->fontAttr_array[0].bitmap_buffer[i * this->fontAttr_array[0].font_width + j]);
+//    for (int i = 0; i < this->fontAttr_array_[0].font_rows; ++i) {
+//        for (int j = 0; j < this->fontAttr_array_[0].font_width; ++j) {
+//            printf("%02x ", this->fontAttr_array_[0].bitmap_buffer[i * this->fontAttr_array_[0].font_width + j]);
 //        }
 //        printf("\n");
 //    }
 //    printf("\n");
 //    for (int i = 0; i < 100; ++i) {
-//        printf("%02x ", this->imageBuffer[i]);
+//        printf("%02x ", this->image_buffer_[i]);
 //    }
 //    printf("\n");
-    ret = clEnqueueReadBuffer(this->queue, imgBuf, CL_TRUE, 0, this->bufferSize, this->imageBuffer, 0, NULL, NULL);
+    ret = clEnqueueReadBuffer(this->queue_, imgBuf, CL_TRUE, 0, this->buffer_size_, this->image_buffer_, 0, NULL, NULL);
     if (ret != CL_SUCCESS) {
         printf("2.OpenCL error with code %d happened.\n", ret);
         // 根据错误代码决定后续操作
         perror("clEnqueueReadBuffer");
     }
 //    for (int i = 0; i < 100; ++i) {
-//        printf("%02x ", this->imageBuffer[i]);
+//        printf("%02x ", this->image_buffer_[i]);
 //    }
 //    printf("\n");
 
@@ -240,11 +255,11 @@ void COSD_OpenCL::copyBitmapToImage(unsigned char *bitmap, unsigned char *image,
 }
 
 uint8_t *COSD_OpenCL::draw_cross(int cross_width, int cross_height) {
-    if (cross_width > this->img_width) {
-        cross_width = this->img_width;
+    if (cross_width > this->img_width_) {
+        cross_width = this->img_width_;
     }
-    if (cross_height > this->img_height) {
-        cross_height = this->img_height;
+    if (cross_height > this->img_height_) {
+        cross_height = this->img_height_;
     }
 
     if (cross_width <= 0) {
@@ -253,11 +268,11 @@ uint8_t *COSD_OpenCL::draw_cross(int cross_width, int cross_height) {
     if (cross_height <= 0) {
         cross_height = 0;
     }
-    if (cross_width > this->img_width) {
-        cross_width = this->img_width;
+    if (cross_width > this->img_width_) {
+        cross_width = this->img_width_;
     }
-    if (cross_height > this->img_height) {
-        cross_height = this->img_height;
+    if (cross_height > this->img_height_) {
+        cross_height = this->img_height_;
     }
     uint8_t *cross_buf = (uint8_t *) malloc(sizeof(uint8_t) * cross_width * cross_height);
     for (int i = 0; i < cross_height; i++) {
@@ -271,12 +286,12 @@ uint8_t *COSD_OpenCL::draw_cross(int cross_width, int cross_height) {
 }
 
 uint8_t *COSD_OpenCL::draw_box(int box_width, int box_height, int pound_width, int type) {
-    if (box_width > this->img_width) {
-        box_width = this->img_width;
+    if (box_width > this->img_width_) {
+        box_width = this->img_width_;
     }
 
-    if (box_height > this->img_height) {
-        box_height = this->img_height;
+    if (box_height > this->img_height_) {
+        box_height = this->img_height_;
     }
     if (box_width <= 0) {
         box_width = 0;
@@ -312,12 +327,12 @@ uint8_t *COSD_OpenCL::draw_box(int box_width, int box_height, int pound_width, i
     return cross_buf;
 }
 uint8_t *COSD_OpenCL::draw_yaw_rule(int rule_width, int rule_height, int part_num, int type){
-    if (rule_width > this->img_width) {
-        rule_width = this->img_width;
+    if (rule_width > this->img_width_) {
+        rule_width = this->img_width_;
     }
 
-    if (rule_height > this->img_height) {
-        rule_height = this->img_height;
+    if (rule_height > this->img_height_) {
+        rule_height = this->img_height_;
     }
     if (rule_width <= 0) {
         rule_width = 0;

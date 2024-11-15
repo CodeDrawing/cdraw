@@ -11,8 +11,8 @@
 #include "CdrawTime.h"
 #include "CommonTool.h"
 //#include "CdrawJSON.h"
-//#define net_json
-//#define uart_json
+#define net_json
+#define uart_json
 
 //#define CREATE_FILE
 //#define WRITE_SPI_FLASH

@@ -46,8 +46,13 @@ class CdrawJSON {
         _cJSON_Print(save_json, cfg_json_file);
         fclose(cfg_json_file);
         cJSON_Delete(save_json);
-        LOG_WITH_MODULE(INFO) << "create a json file";
+        LOG_WITH_MODULE(INFO) << "create " << json_name_ << "json file";
     }
+
+    /**
+     * bind 和func这个函数都是sjb_bind_ + json 文件的结构体名字
+     */
+
     /**
      * @author: codeDrawing
      * @description:    读取json文件，初始化类的参数，如果没有json文件，就使用回调函数创建一组默认值或者根据调用该函数时类成员变量的值创建json文件

@@ -10,7 +10,7 @@
 
 #ifndef CDRAW_UART_H
 #define CDRAW_UART_H
-
+#define uart_json
 #include <iostream>
 
 #include <fcntl.h>

@@ -10,7 +10,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
-
+#define net_json
 #include <cstring>
 #include <iostream>
 
@@ -48,7 +48,7 @@ class CdrawNet {
     */
     CdrawNet();
     CdrawNet(const uint8_t id, const std::string localIp, const std::string remoteIp, const uint32_t localPort,
-             const uint32_t remotePort, const bool isWork = false, const bool use_json_ = false,const std::string json_path = "/etc/cdhf/net_param.json",
+             const uint32_t remotePort, const bool isWork = false, const bool use_json_ = false, const std::string json_path = "/etc/cdhf/net_param.json",
              const std::string json_name = "net_param");
     CdrawNet(const uint8_t id, const std::string localIp, const uint32_t localPort, const bool isWork = false, const bool use_json_ = false,
              const std::string json_path = "/etc/cdhf/net_json.json", const std::string json_name = "net_param");
